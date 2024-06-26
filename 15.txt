@@ -1,0 +1,58 @@
+--1
+UPDATE Book
+SET Price = ROUND(Price, -1);
+SELECT *
+FROM Book
+
+--2
+SELECT YEAR(OrderDatetime) [Year], MONTH(OrderDatetime) [Month], COUNT(*) AS [Количество Заказов]
+FROM [Order]
+GROUP BY YEAR(OrderDatetime), MONTH(OrderDatetime)
+ORDER BY [Year] DESC, [Month] DESC;
+
+--3
+UPDATE Book
+SET Price = Price * 0.9
+WHERE BookId NOT IN (
+    SELECT DISTINCT BookId
+    FROM OrderList, [Order]
+    WHERE YEAR(OrderDatetime) = YEAR(GETDATE())
+);
+SELECT *
+FROM Book
+
+--4
+SELECT CustomerId, UPPER(Surname) AS [Фамилия], UPPER(LEFT([Name], 1)) AS [Первая буква имени]
+FROM Customer;
+
+--5
+UPDATE Customer
+SET [Login] = REPLACE(REPLACE([Login], ' ', '_'), ' ', '');
+SELECT *
+FROM Customer
+
+--6
+SELECT CustomerId, Surname, [Name], COALESCE(Phone, '-') AS [Телефон], COALESCE([Address], NULL) AS [Адрес]
+FROM Customer;
+
+--7
+SELECT AuthorId, STRING_AGG(Title, ', ') WITHIN GROUP (ORDER BY Title) AS [Названия книг]
+FROM Book
+GROUP BY AuthorId
+ORDER BY [Названия книг];
+
+--8
+SELECT OrderList.OrderId, Author.Surname+' '+Author.[Name] AS [Автор], Book.Title
+FROM OrderList JOIN 
+Book  ON OrderList.BookId = Book.BookId JOIN 
+Author ON Book.AuthorId = Author.AuthorId;
+
+--9
+SELECT ROW_NUMBER() OVER (ORDER BY Title) AS [Порядковый номер], Title
+FROM Book
+ORDER BY Title;
+
+--10
+SELECT ROW_NUMBER() OVER (PARTITION BY Genre ORDER BY Title) AS [Порядковый номер в жанре], Genre, Title
+FROM Book
+ORDER BY Genre, Title;
